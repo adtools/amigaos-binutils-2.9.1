@@ -225,6 +225,9 @@ struct m68k_exp
 
   /* The expression itself.  */
   expressionS exp;
+  
+  /* base-relative? */
+  short baserel;
 };
 
 /* The operand modes.  */

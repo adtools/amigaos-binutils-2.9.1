@@ -31,6 +31,7 @@ Boston, MA 02111-1307, USA.  */
 #include <ctype.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <demangle.h>
 #undef CURRENT_DEMANGLING_STYLE
@@ -3265,9 +3266,6 @@ fatal (str)
   fprintf (stderr, "%s: %s\n", program_name, str);
   exit (1);
 }
-
-char * malloc ();
-char * realloc ();
 
 char *
 xmalloc (size)

@@ -93,6 +93,8 @@ ALL_EMULATIONS = \
 	ea29k.o \
 	eaixppc.o \
 	eaixrs6.o \
+	eamiga.o \
+	eamiga_bss.o \
 	ealpha.o \
 	earcelf.o \
 	earmaoutb.o \
@@ -229,6 +231,12 @@ GENSCRIPTS = $(SHELL) $(srcdir)/genscripts.sh ${srcdir} ${libdir} @host@ @target
 GEN_DEPENDS = $(srcdir)/genscripts.sh $(srcdir)/emultempl/stringify.sed
 @TDIRS@
 
+eamiga.c: $(srcdir)/emulparams/amiga.sh\
+   $(srcdir)/emultempl/amiga.em $(srcdir)/scripttempl/amiga.sc ${GEN_DEPENDS} 
+	${GENSCRIPTS} amiga "$(tdir_amiga)"
+eamiga_bss.c: $(srcdir)/emulparams/amiga_bss.sh\
+   $(srcdir)/emultempl/amiga.em $(srcdir)/scripttempl/amiga_bss.sc ${GEN_DEPENDS}
+	${GENSCRIPTS} amiga_bss "$(tdir_amiga_bss)"
 ea29k.c: $(srcdir)/emulparams/a29k.sh \
   $(srcdir)/emultempl/generic.em $(srcdir)/scripttempl/a29k.sc ${GEN_DEPENDS}
 	${GENSCRIPTS} a29k "$(tdir_a29k)"

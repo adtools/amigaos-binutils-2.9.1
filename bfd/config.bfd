@@ -284,6 +284,10 @@ case "${targ}" in
   m68*-motorola-sysv*)
     targ_defvec=m68ksysvcoff_vec
     ;;
+  m68*-*-amigaos*)
+    targ_defvec=amiga_vec
+    targ_selvecs="aout_amiga_vec amiga_vec"
+    ;;
   m68*-hp-bsd*)
     targ_defvec=hp300bsd_vec
     targ_underscore=yes

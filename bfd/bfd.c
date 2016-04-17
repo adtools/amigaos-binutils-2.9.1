@@ -177,6 +177,7 @@ CODE_FRAGMENT
 .      struct cisco_core_struct *cisco_core_data;
 .      struct versados_data_struct *versados_data;
 .      struct netbsd_core_struct *netbsd_core_data;
+.      struct amiga_data_struct *amiga_data;
 .      PTR any;
 .      } tdata;
 .  
@@ -1153,3 +1154,4 @@ bfd_record_phdr (abfd, type, flags_valid, flags, at_valid, at,
 
   return true;
 }
+

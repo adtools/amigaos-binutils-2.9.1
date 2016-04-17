@@ -16,6 +16,9 @@ extern "C" {
 
 #include "ansidecl.h"
 
+#include <string.h>
+#include <stdlib.h>
+
 /* Build an argument vector from a string.  Allocates memory using
    malloc.  Use freeargv to free the vector.  */
 
@@ -108,12 +111,7 @@ extern int xatexit PARAMS ((void (*fn) (void)));
 
 /* Exit, calling all the functions registered with xatexit.  */
 
-#ifndef __GNUC__
 extern void xexit PARAMS ((int status));
-#else
-typedef void libiberty_voidfn PARAMS ((int status));
-__volatile__ libiberty_voidfn xexit;
-#endif
 
 /* Set the program name used by xmalloc.  */
 

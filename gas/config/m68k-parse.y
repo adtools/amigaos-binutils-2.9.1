@@ -945,6 +945,7 @@ yylex ()
     }
 
   yylval.exp.size = SIZE_UNSPEC;
+  yylval.exp.baserel = 0;
   if (s <= str + 2
       || (s[-2] != '.' && s[-2] != ':'))
     tail = 0;
@@ -952,18 +953,21 @@ yylex ()
     {
       switch (s[-1])
 	{
+	case 'B':
+          yylval.exp.baserel = 1;
 	case 's':
 	case 'S':
 	case 'b':
-	case 'B':
 	  yylval.exp.size = SIZE_BYTE;
 	  break;
-	case 'w':
 	case 'W':
+          yylval.exp.baserel = 1;
+	case 'w':
 	  yylval.exp.size = SIZE_WORD;
 	  break;
-	case 'l':
 	case 'L':
+          yylval.exp.baserel = 1;
+	case 'l':
 	  yylval.exp.size = SIZE_LONG;
 	  break;
 	default:

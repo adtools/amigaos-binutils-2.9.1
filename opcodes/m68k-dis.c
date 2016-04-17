@@ -49,7 +49,7 @@ CONST char * CONST fpcr_names[] = {
 
 static char *const reg_names[] = {
   "%d0", "%d1", "%d2", "%d3", "%d4", "%d5", "%d6", "%d7",
-  "%a0", "%a1", "%a2", "%a3", "%a4", "%a5", "%fp", "%sp",
+  "%a0", "%a1", "%a2", "%a3", "%a4", "%fp", "%a6", "%sp",
   "%ps", "%pc"};
 
 /* Sign-extend an (unsigned char). */

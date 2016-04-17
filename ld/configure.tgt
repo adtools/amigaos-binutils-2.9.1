@@ -119,6 +119,7 @@ sh-*-*|sh-*-rtems*)	targ_emul=sh; targ_extra_emuls=shl ;;
 m68k-sony-*)		targ_emul=news ;;
 m68k-hp-bsd*)		targ_emul=hp300bsd ;;
 m68*-motorola-sysv*)	targ_emul=delta68 ;;
+m68*-*-amigaos*)	targ_emul=amiga ; targ_extra_emuls=amiga_bss;;
 m68*-*-aout)		targ_emul=m68kaout ;;
 m68*-*-coff)		targ_emul=m68kcoff ;;
 m68*-*-elf)		targ_emul=m68kelf ;;

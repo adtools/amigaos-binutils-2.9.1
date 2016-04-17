@@ -595,6 +595,22 @@ void eh_frame_convert_frag PARAMS ((fragS *));
 
 #include "expr.h"		/* Before targ-*.h */
 
+struct relax_type
+{
+  /* Forward reach. Signed number. > 0. */
+  long rlx_forward;
+  /* Backward reach. Signed number. < 0. */
+  long rlx_backward;
+
+  /* Bytes length of this address. */
+  unsigned char rlx_length;
+
+  /* Next longer relax-state.  0 means there is no 'next' relax-state. */
+  relax_substateT rlx_more;
+};
+
+typedef struct relax_type relax_typeS;
+
 /* this one starts the chain of target dependant headers */
 #include "targ-env.h"
 

@@ -35,12 +35,19 @@ struct fix;
 #ifdef TE_NetBSD
 #define TARGET_FORMAT "a.out-m68k-netbsd"
 #endif
+#ifdef TE_AMIGA
+#define TARGET_FORMAT "a.out-amiga"
+#endif
 #ifdef TE_LINUX
 #define TARGET_FORMAT "a.out-m68k-linux"
 #endif
 #ifndef TARGET_FORMAT
 #define TARGET_FORMAT "a.out-zero-big"
 #endif
+#endif
+
+#ifdef OBJ_AMIGAHUNK
+#define TARGET_FORMAT "amiga"
 #endif
 
 #ifdef OBJ_ELF
@@ -74,13 +81,10 @@ struct fix;
 #define TC_COFF_FIX2RTYPE(fixP) tc_coff_fix2rtype(fixP)
 #define TC_COFF_SIZEMACHDEP(frag) tc_coff_sizemachdep(frag)
 extern int tc_coff_sizemachdep PARAMS ((struct frag *));
-#ifdef TE_SUN3
 /* This variable contains the value to write out at the beginning of
-   the a.out file.  The 2<<16 means that this is a 68020 file instead
    of an old-style 68000 file */
 
-#define DEFAULT_MAGIC_NUMBER_FOR_OBJECT_FILE (2<<16|OMAGIC);	/* Magic byte for file header */
-#endif /* TE_SUN3 */
+#define DEFAULT_MAGIC_NUMBER_FOR_OBJECT_FILE (OMAGIC);	/* Magic byte for file header */
 
 #ifndef AOUT_MACHTYPE
 #define AOUT_MACHTYPE m68k_aout_machtype
@@ -200,6 +204,9 @@ extern int m68k_parse_long_option PARAMS ((char *));
 
 extern struct relax_type md_relax_table[];
 #define TC_GENERIC_RELAX_TABLE md_relax_table
+
+#define TC_FIX_TYPE char
+#define TC_INIT_FIX_DATA(p)
 
 /* Copied from write.c */
 /* This was formerly called M68K_AIM_KLUDGE.  */

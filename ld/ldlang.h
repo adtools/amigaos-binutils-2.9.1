@@ -256,6 +256,8 @@ typedef struct lang_input_statement_struct
   /*    unsigned int globals_in_this_file;*/
   const char *target;
   boolean real;
+  /* Added for AMIGA support of section attributes */
+  int amiga_attribute;
 } lang_input_statement_type;
 
 typedef struct

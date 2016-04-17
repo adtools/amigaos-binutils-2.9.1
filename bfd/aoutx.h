@@ -135,7 +135,8 @@ DESCRIPTION
 static boolean aout_get_external_symbols PARAMS ((bfd *));
 static boolean translate_from_native_sym_flags
   PARAMS ((bfd *, aout_symbol_type *));
-static boolean translate_to_native_sym_flags
+/*Amiga hack - used in amigaos.c, must be global */
+/*static*/ boolean translate_to_native_sym_flags
   PARAMS ((bfd *, asymbol *, struct external_nlist *));
 static void adjust_o_magic PARAMS ((bfd *, struct internal_exec *));
 static void adjust_z_magic PARAMS ((bfd *, struct internal_exec *));
@@ -1576,7 +1577,7 @@ translate_from_native_sym_flags (abfd, cache_ptr)
 
 /* Set the fields of SYM_POINTER according to CACHE_PTR.  */
 
-static boolean
+/*static*/ boolean
 translate_to_native_sym_flags (abfd, cache_ptr, sym_pointer)
      bfd *abfd;
      asymbol *cache_ptr;

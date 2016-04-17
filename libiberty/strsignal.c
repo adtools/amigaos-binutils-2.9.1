@@ -25,8 +25,10 @@
 
 #ifdef __STDC__
 #include <stddef.h>
+#ifndef __APPLE__
 extern void *malloc (size_t size);				/* 4.10.3.3 */
 extern void *memset (void *s, int c, size_t n);			/* 4.11.6.1 */
+#endif
 #else	/* !__STDC__ */
 extern char *malloc ();		/* Standard memory allocater */
 extern char *memset ();

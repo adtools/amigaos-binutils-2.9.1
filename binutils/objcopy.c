@@ -1242,7 +1242,8 @@ copy_section (ibfd, isection, obfdarg)
   if (size == 0 || osection == 0)
     return;
 
-  if (strip_symbols == strip_all)
+  /* Never, ever, strip reloc data on the Amiga! */
+  if (strip_symbols == strip_all && bfd_get_flavour(obfd) != bfd_target_amiga_flavour)
     bfd_set_reloc (obfd, osection, (arelent **) NULL, 0);
   else
     {

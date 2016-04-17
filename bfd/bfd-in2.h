@@ -2290,6 +2290,8 @@ struct _bfd
       struct cisco_core_struct *cisco_core_data;
       struct versados_data_struct *versados_data;
       struct netbsd_core_struct *netbsd_core_data;
+      struct amiga_data_struct *amiga_data;
+      struct amiga_ardata_struct *amiga_ardata;
       PTR any;
       } tdata;
   
@@ -2505,6 +2507,7 @@ core_file_matches_executable_p
 #endif
 enum bfd_flavour {
   bfd_target_unknown_flavour,
+  bfd_target_amiga_flavour,
   bfd_target_aout_flavour,
   bfd_target_coff_flavour,
   bfd_target_ecoff_flavour,
