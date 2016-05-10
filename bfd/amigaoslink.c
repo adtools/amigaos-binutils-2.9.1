@@ -902,7 +902,7 @@ amiga_final_link (abfd, info)
      struct bfd_link_info *info;
 {
   bfd *sub;
-  asection *o, *act_sec;
+  asection *o;
   struct bfd_link_order *p;
   size_t outsymalloc;
   struct generic_write_global_symbol_info wginfo;
