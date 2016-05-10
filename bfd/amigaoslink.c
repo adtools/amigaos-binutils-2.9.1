@@ -319,7 +319,7 @@ my_add_to (data, offset, size, add, sign)
       break;
 
     case 2:			/* long word */
-      val = bfd_getb_signed_32 (p) + add;
+      val = bfd_getb_signed_32 ((unsigned char *)p) + add;
       /* If we are linking a resident program, then we limit the reloc size
          to about +/- 1 GB.
 
@@ -334,7 +334,7 @@ my_add_to (data, offset, size, add, sign)
 	{
 	  ret = bfd_reloc_overflow;
 	}
-      bfd_putb32 (val, p);
+      bfd_putb32 (val, (unsigned char *)p);
       break;
 
     default:			/* Error */
@@ -695,7 +695,12 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
 	  if (sec->output_section != target_section->output_section)
 	    /* Error or baserel */
 	    {
-	      if (target_section->output_section->flags & SEC_DATA != 0)
+              /*
+               * TODO: Figure out original intentions. These parens seem to be
+               * placed incorrectly, but other variant makes -fbaserel linking
+               * to crash.
+               */
+	      if (target_section->output_section->flags & (SEC_DATA != 0))
 		/* Baserel reloc */
 		{
 		  goto baserel;	/* Dirty, but no code doubling.. */
@@ -875,11 +880,12 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
     }				/* Of switch */
 
   /* Add in relocation */
-  if (relocation != 0)
+  if (relocation != 0) {
     if (addval)
       ret = my_add_to (data, r->address, size, relocation, sign);
     else
       ret = my_set_to (data, r->address, size, relocation, sign);
+  }
 
   if (copy)			/* Copy reloc to output section */
     {
@@ -893,6 +899,7 @@ aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
   return ret;
 }
 
+extern boolean amiga_aout_bfd_final_link (bfd *, struct bfd_link_info *);
 
 /* The final link routine, used both by Amiga and a.out backend*/
 /* This is nearly a copy of _bfd_generic_final_link */
@@ -1032,7 +1039,7 @@ amiga_final_link (abfd, info)
 		  return false;
 		}
 
-	      BFD_ASSERT (reloc_count == input_section->reloc_count);
+	      BFD_ASSERT (reloc_count == (long)input_section->reloc_count);
 	      o->reloc_count += reloc_count;
 	      free (relocs);
 	    }
@@ -1197,5 +1204,5 @@ amiga_reloc_link_order (abfd, info, sec, link_order)
   return true;
 }
 
-/* vim : cinoptions=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 : */
-/* vim : sw=2 sts=2 tw=79 fo-=ro fo+=cql : */
+/* vim: set cino=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 : */
+/* vim: set sw=2 sts=2 ts=8 tw=79 fo-=ro fo+=cql : */

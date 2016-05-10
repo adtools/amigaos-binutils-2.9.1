@@ -160,15 +160,15 @@ typedef struct amiga_ardata_struct
 
 static long determine_datadata_relocs (bfd *, asection *);
 static boolean amiga_write_section_contents (bfd *, asection *, asection *,
-					     long, long *);
+					     unsigned long, long *);
 static boolean amiga_write_symbols (bfd *, asection *);
 static boolean amiga_digest_file ();
 static boolean amiga_mkobject ();
 static boolean amiga_mkarchive ();
-static boolean amiga_read_unit (bfd *, unsigned long);
+static boolean amiga_read_unit (bfd *, long);
 static boolean amiga_read_load (bfd *);
 static boolean amiga_handle_cdb_hunk (bfd *, unsigned long,
-				      unsigned long, int, unsigned long);
+				      unsigned long, int, long);
 static boolean amiga_handle_rest (bfd *, asection *, boolean);
 static boolean write_name (bfd *, const char *, long);
 
@@ -464,7 +464,7 @@ amiga_make_unique_section (bfd * abfd, CONST char *name)
 #define CARSYM_BLOCK 200
 
 static boolean
-parse_archive_units (bfd * abfd, int *n_units, unsigned long filesize, boolean one,	/* parse only the first unit ? */
+parse_archive_units (bfd * abfd, int *n_units, long filesize, boolean one,	/* parse only the first unit ? */
 		     struct arch_syms **syms, symindex * symcount)
 {
   unsigned long hunk_type, no, hunk, len, n;
@@ -695,7 +695,7 @@ amiga_digest_file (bfd * abfd)
 /* Read in Unit file */
 /* file pointer is located after the HUNK_UNIT LW */
 static boolean
-amiga_read_unit (bfd * abfd, unsigned long size)
+amiga_read_unit (bfd * abfd, long size)
 {
   unsigned long hunk_type, hunk_number = 0;
   unsigned long sz;
@@ -761,10 +761,10 @@ amiga_read_load (bfd * abfd)
 {
   amiga_data_type *amiga_data = AMIGA_DATA (abfd);
   unsigned long *hunk_attributes, *hunk_sizes;
-  int hunk_number = 0;
+  unsigned int hunk_number = 0;
   int hunk_type;
   unsigned long max_hunk_number;
-  int i;
+  unsigned int i;
   unsigned long buf[4];
 
   /* Read hunk lengths (and memory attributes...) */
@@ -876,7 +876,7 @@ static boolean
 amiga_handle_cdb_hunk (bfd * abfd,
 		       unsigned long hunk_type,
 		       unsigned long hunk_number,
-		       int hunk_attribute, unsigned long hunk_size)
+		       int hunk_attribute, long hunk_size)
 /* If hunk_size==-1, then we are digesting a HUNK_UNIT */
 {
   amiga_data_type *amiga_data = AMIGA_DATA (abfd);
@@ -1018,7 +1018,7 @@ static boolean
 amiga_handle_rest (bfd * abfd, asection * current_section, boolean isload)
 {
   unsigned long hunk_type, type, len, n;
-  long tmp;
+  unsigned long tmp;
   unsigned long no, *countptr;
   unsigned long buf[5];
   amiga_per_section_type *asect = amiga_per_section (current_section);
@@ -1244,7 +1244,7 @@ write_longs (unsigned long *in, long nb, bfd * abfd)
 static long
 determine_datadata_relocs (bfd * abfd, asection * section)
 {
-  long relocs = 1, i;
+  unsigned long relocs = 1, i;
   struct reloc_cache_entry *r;
   asection *insection;
   asymbol *sym_p;
@@ -1290,8 +1290,8 @@ amiga_write_object_contents (bfd * abfd)
   struct amiga_data_struct *amiga_data = AMIGA_DATA (abfd);
   sec_ptr p;
   unsigned long n[5];
-  long i;
-  long datadata_relocs, bss_size = 0;
+  unsigned long i, bss_size = 0;
+  unsigned long datadata_relocs;
   long *index_map;
   asection *data_sec;
 
@@ -1406,7 +1406,7 @@ amiga_write_object_contents (bfd * abfd)
   else
     {
       /* Unit , no base-relative linking here.... */
-      int len = strlen (abfd->filename);
+      unsigned int len = strlen (abfd->filename);
       /* Write out unit header */
       DPRINT (5, ("Writing Unit\n"));
 
@@ -1563,7 +1563,7 @@ amiga_write_object_contents (bfd * abfd)
 	      /* NULL entries have been written already.... */
 	      if (CAN_WRITE_OUTSYM (sym))
 		{
-		  int len = strlen (sym->name) + 1;
+		  unsigned int len = strlen (sym->name) + 1;
 
 		  /* Write string tab */
 		  if (bfd_write ((PTR) (sym->name), sizeof (char), len, abfd)
@@ -1667,7 +1667,8 @@ amiga_write_archive_contents (bfd * arch)
 }
 
 static boolean
-amiga_write_armap (bfd * abfd)
+amiga_write_armap (bfd *arch, unsigned int elength,
+		   struct orl *map, unsigned int orl_count, int stridx)
 {
   return true;
 }
@@ -1725,23 +1726,24 @@ static unsigned long reloc_types[] = {
 #endif
 };
 
-#define NB_RELOC_TYPES (sizeof(reloc_types) / sizeof(reloc_types[0]))
+#define NB_RELOC_TYPES (long)(sizeof(reloc_types) / sizeof(reloc_types[0]))
 
 /* Write out section contents, including relocs */
 static boolean
 amiga_write_section_contents (bfd * abfd,
 			      asection * section,
 			      asection * data_sec,
-			      long datadata_relocs, long *index_map)
+			      unsigned long datadata_relocs,
+                              long *index_map)
 {
   static const char zero[3] = { 0, 0, 0 };
   unsigned long n[2];
-  int i, j, type, size;
-  unsigned int k;
+  int j, type, size;
+  unsigned int i, k, pad;
   struct reloc_cache_entry *r;
   asection *osection, *sec, *insection;
   asymbol *sym_p;
-  int pad, reloc_count = 0;
+  int reloc_count = 0;
   unsigned long disksize;
   int max_hunk = -1;
   char *c_p;
@@ -2015,11 +2017,11 @@ amiga_write_section_contents (bfd * abfd,
 		  while ((relocs =
 			  reloc_counts[i + (j * NB_RELOC_TYPES)]) > 0)
 		    {
-		      if (!written)
+		      if (!written) {
 			if (!write_longs (&reloc_types[i], 1, abfd))
 			  return false;
-			else
-			  written = true;
+                        written = true;
+                      }
 
 		      if (relocs > 0xffff)
 			relocs = 0xffff;
@@ -2067,7 +2069,7 @@ amiga_write_section_contents (bfd * abfd,
 #else
 			  jj = index_map[insection->output_section->index];
 #endif
-			  if (jj == j && i == determine_type (r))
+			  if (jj == j && (long)i == determine_type (r))
 			    {
 			      section->orelocation[k] = NULL;
 			      if (!write_longs ((PTR) & r->address, 1, abfd))
@@ -2099,7 +2101,7 @@ amiga_write_section_contents (bfd * abfd,
 static boolean
 amiga_write_symbols (bfd * abfd, asection * section)
 {
-  int i;
+  unsigned int i;
   struct reloc_cache_entry *r;
   asection *osection;
   asymbol *sym_p;
@@ -2377,7 +2379,7 @@ amiga_get_section_contents (bfd * abfd,
 			    PTR location,
 			    file_ptr offset, bfd_size_type count)
 {
-  long disk_size = amiga_per_section (section)->disk_size;
+  unsigned long disk_size = amiga_per_section (section)->disk_size;
 
   if (bfd_seek (abfd, section->filepos + offset, SEEK_SET))
     return false;
@@ -2541,7 +2543,7 @@ long
 amiga_get_symtab (bfd * abfd, asymbol ** location)
 {
   amiga_symbol_type *symp;
-  int i = 0;
+  unsigned int i = 0;
 
   if (!amiga_slurp_symbol_table (abfd))
     return -1;
@@ -2687,7 +2689,7 @@ read_raw_relocs (bfd * abfd, sec_ptr section, unsigned long d_offset,	/* offset 
 	  break;
 	}
     }
-
+  return true;
 }
 
 
@@ -2697,8 +2699,8 @@ amiga_slurp_relocs (bfd * abfd, sec_ptr section, asymbol ** symbols)
 {
   amiga_data_type *amiga_data = AMIGA_DATA (abfd);
   amiga_symbol_type *asp;
-  unsigned long type, offset;
-  int i, n, br;
+  unsigned long type, offset, i, n;
+  int br;
   int index;
   amiga_per_section_type *asect = amiga_per_section (section);
 
@@ -2915,8 +2917,9 @@ amiga_find_nearest_line (bfd * abfd,
 			 asection * section,
 			 asymbol ** symbols,
 			 bfd_vma offset,
-			 char **filename_ptr,
-			 char **functionname_ptr, int *line_ptr)
+			 const char **filename_ptr,
+			 const char **functionname_ptr,
+                         unsigned int *line_ptr)
 {
   /* FIXME (see aoutx.h, for example) */
   return false;
@@ -3045,7 +3048,7 @@ amiga_slurp_armap (bfd * abfd)
 }
 
 static void
-amiga_truncate_arname ()
+amiga_truncate_arname (bfd *abfd, const char *filename, char *hdr)
 {
 }
 
@@ -3060,7 +3063,7 @@ amiga_archive_p (bfd * abfd)
   bfd_set_error (bfd_error_wrong_format);
 
   if (bfd_stat (abfd, &stat_buffer) < 0)
-    return false;
+    return NULL;
 
   if (stat_buffer.st_size != 0)
     {
@@ -3167,14 +3170,14 @@ amiga_read_ar_hdr (bfd * abfd)
     ared->filename = "(no name)";
 
   if (bfd_seek (abfd, start_pos + 4, SEEK_SET))
-    return false;
+    return NULL;
 
   if (!amiga_read_unit (abfd, amiga_ardata (abfd)->filesize))
     return NULL;
 
   ared->parsed_size = bfd_tell (abfd) - start_pos;
   if (bfd_seek (abfd, start_pos, SEEK_SET))
-    return false;
+    return NULL;
   return (PTR) ared;
 }
 
@@ -3322,3 +3325,6 @@ const bfd_target amiga_vec = {
   BFD_JUMP_TABLE_DYNAMIC (_bfd_nodynamic),
   (PTR) 0
 };
+
+/* vim: set cino=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 : */
+/* vim: set sw=2 sts=2 ts=8 tw=79 fo-=ro fo+=cql : */
