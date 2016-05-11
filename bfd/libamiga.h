@@ -31,6 +31,33 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define NAME(x,y) CAT3(x,_32_,y)
 #define JNAME(x) CAT(x,_32)
 #define BYTES_IN_WORD 4
+#define GL(x) bfd_get_32 (abfd, (bfd_byte *) (x))
+#define GW(x) bfd_get_16 (abfd, (bfd_byte *) (x))
+#define LONGSIZE(l) (((l)+3) >> 2)
+
+#define max(x,y) (((x)<=(y))?(y):(x))
+
+#define DEBUG_AMIGA 10000
+
+#if DEBUG_AMIGA
+#include <stdarg.h>
+static void
+error_print (const char *fmt, ...)
+{
+  va_list args;
+
+  va_start (args, fmt);
+  (void) vfprintf (stderr, fmt, args);
+  va_end (args);
+}
+
+#define DPRINT(L,x) if (L>=DEBUG_AMIGA) error_print x
+#else
+#define DPRINT(L,x)
+#endif
+
+/* AmigaOS doesn't like symbols names longer than 124 characters */
+#define MAX_NAME_SIZE 124
 
 /* Hunk ID numbers.*/
 #define HUNK_UNIT		999
@@ -94,6 +121,34 @@ Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
 #define EXT_ABSREF16		138
 #define EXT_ABSREF8		139
 
+#if DEBUG_AMIGA
+#define DPRINTHUNK(x)   fprintf (stderr,"Processing %s hunk (0x%x)...",\
+          (x) == HUNK_UNIT ? "HUNK_UNIT" :\
+          (x) == HUNK_NAME ? "HUNK_NAME" :\
+          (x) == HUNK_DEBUG ? "HUNK_DEBUG" :\
+          (x) == HUNK_OVERLAY ? "HUNK_OVERLAY" :\
+          (x) == HUNK_BREAK ? "HUNK_BREAK" :\
+          (x) == HUNK_HEADER ? "HUNK_HEADER" :\
+          (x) == HUNK_CODE ? "HUNK_CODE" :\
+          (x) == HUNK_DATA ? "HUNK_DATA" :\
+          (x) == HUNK_BSS ? "HUNK_BSS" :\
+          (x) == HUNK_RELOC8 ? "HUNK_RELOC8" :\
+          (x) == HUNK_RELOC16 ? "HUNK_RELOC16" :\
+          (x) == HUNK_RELOC32 ? "HUNK_RELOC32" :\
+          (x) == HUNK_DREL8 ? "HUNK_DREL8" :\
+          (x) == HUNK_DREL16 ? "HUNK_DREL16" :\
+          (x) == HUNK_DREL32 ? "HUNK_DREL32" :\
+          (x) == HUNK_SYMBOL ? "HUNK_SYMBOL" :\
+          (x) == HUNK_EXT ? "HUNK_EXT" :\
+          (x) == HUNK_END ? "HUNK_END" :\
+          (x) == HUNK_LIB ? "HUNK_LIB" :\
+          (x) == HUNK_INDEX ? "HUNK_INDEX" :\
+          "*unknown*",(x))
+#define DPRINTHUNKEND fprintf(stderr,"...done\n")
+#else
+#define DPRINTHUNK(x)
+#define DPRINTHUNKEND
+#endif
 
 typedef struct amiga_reloc
 {
@@ -227,3 +282,6 @@ struct arch_syms
 #define MEMF_REVERSE		(1L << 18)
 #define MEMF_TOTAL		(1L << 19)
 #define	MEMF_NO_EXPUNGE		(1L << 31)
+
+/* vim: set cino=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 : */
+/* vim: set sw=2 sts=2 ts=8 tw=79 fo-=ro fo+=cql : */

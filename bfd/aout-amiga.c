@@ -42,9 +42,10 @@ extern bfd_byte *get_relocated_section_contents (bfd *,
    offsets in the output file.  */
 
 boolean
-amiga_aout_bfd_final_link (abfd, info)
-     bfd *abfd;
-     struct bfd_link_info *info;
+amiga_aout_bfd_final_link (bfd *abfd, struct bfd_link_info *info)
 {
   return NAME (aout, final_link) (abfd, info, MY_final_link_callback);
 }
+
+/* vim: set cino=>4,n-2,{2,^-2,:2,=2,g0,h2,p5,t0,+2,(0,u0,w1,m1 : */
+/* vim: set sw=2 sts=2 ts=8 tw=79 fo-=ro fo+=cql : */

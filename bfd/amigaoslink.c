@@ -76,28 +76,6 @@ the original routines from @file{linker.c} and @file{reloc.c}.
 #undef adata
 #include "libaout.h"
 
-
-#define max(x,y) (((x)<=(y))?(y):(x))
-
-#define DEBUG_AMIGA 10000
-
-#if DEBUG_AMIGA
-#include <stdarg.h>
-static void
-error_print (const char *fmt, ...)
-{
-  va_list args;
-
-  va_start (args, fmt);
-  (void) vfprintf (stderr, fmt, args);
-  va_end (args);
-}
-
-#define DPRINT(L,x) if (L>=DEBUG_AMIGA) error_print x
-#else
-#define DPRINT(L,x)
-#endif
-
 /* This one is used by the linker and tells us, if a debug hunk should be
    written out*/
 int write_debug_hunk = 0;
@@ -129,14 +107,12 @@ static boolean amiga_reloc_link_order
 /* This one is nearly identical to bfd_generic_get_relocated_section_contents
    from reloc.c */
 bfd_byte *
-get_relocated_section_contents (abfd, link_info, link_order, data,
-				relocateable, symbols)
-     bfd *abfd;
-     struct bfd_link_info *link_info;
-     struct bfd_link_order *link_order;
-     bfd_byte *data;
-     boolean relocateable;
-     asymbol **symbols;
+get_relocated_section_contents (bfd * abfd, 
+                                struct bfd_link_info *link_info,
+                                struct bfd_link_order *link_order,
+                                bfd_byte *data,
+                                boolean relocateable, 
+                                asymbol **symbols)
 {
   bfd *input_bfd = link_order->u.indirect.section->owner;
   asection *input_section = link_order->u.indirect.section;
@@ -268,9 +244,7 @@ error_return:
 
 /* Add a value to a location */
 static bfd_reloc_status_type
-my_add_to (data, offset, size, add, sign)
-     PTR data;
-     int offset, size, add, sign;
+my_add_to (PTR data, int offset, int size, int add, int sign)
 {
   signed char *p;
   int val;
@@ -301,7 +275,7 @@ my_add_to (data, offset, size, add, sign)
       break;
 
     case 1:			/* word size */
-      val = (int) ((p[1] & 0xff) | (p[0] << 8)) + add;
+      val = bfd_getb_signed_16 ((unsigned char *)p) + add;
       /* check for overflow */
       if (sign)
 	{
@@ -314,8 +288,7 @@ my_add_to (data, offset, size, add, sign)
 	    ret = bfd_reloc_overflow;
 	}
       /* set the value */
-      p[1] = val & 0xff;
-      p[0] = ((val & 0xff00) >> 8) & 0xff;
+      bfd_putb16 (val, (unsigned char *)p);
       break;
 
     case 2:			/* long word */
@@ -343,14 +316,12 @@ my_add_to (data, offset, size, add, sign)
     }				/* Of switch */
 
   DPRINT (5, ("Leaving add_value\n"));
-  return (ret);
+  return ret;
 }
 
 /* Set a value to a location */
 static bfd_reloc_status_type
-my_set_to (data, offset, size, val, sign)
-     PTR data;
-     int offset, size, val, sign;
+my_set_to (PTR data, int offset, int size, int val, int sign)
 {
   signed char *p;
   bfd_reloc_status_type ret;
@@ -391,8 +362,7 @@ my_set_to (data, offset, size, val, sign)
 	    ret = bfd_reloc_overflow;
 	}
       /* set the value */
-      p[1] = val & 0xff;
-      p[0] = ((val & 0xff00) >> 8) & 0xff;
+      bfd_putb16 (val, (unsigned char *)p);
       break;
 
     case 2:			/* long word */
@@ -410,10 +380,7 @@ my_set_to (data, offset, size, val, sign)
 	{
 	  ret = bfd_reloc_overflow;
 	}
-      p[3] = val & 0xff;
-      p[2] = (val >> 8) & 0xff;
-      p[1] = (val >> 16) & 0xff;
-      p[0] = (val >> 24) & 0xff;
+      bfd_putb32 (val, (unsigned char *)p);
       break;
 
     default:			/* Error */
@@ -422,18 +389,13 @@ my_set_to (data, offset, size, val, sign)
     }				/* Of switch */
 
   DPRINT (5, ("Leaving set_value\n"));
-  return (ret);
+  return ret;
 }
 
 /* Perform an Amiga relocation */
 static bfd_reloc_status_type
-amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
-     bfd *abfd;
-     arelent *r;
-     PTR data;
-     asection *sec;
-     bfd *obfd;
-     char **error_message;
+amiga_perform_reloc (bfd *abfd, arelent *r, PTR data, asection *sec, bfd *obfd,
+                     char **error_message)
 {
   asymbol *sym;			/* Reloc is relative to sym */
   asection *target_section;	/* reloc is relative to this section */
@@ -562,9 +524,8 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
          .bss section contains only COMMON sections...... and should be
          following .data section.. */
 
-      size =
-	(r->howto->type ==
-	 HUNK_DREL32) ? 2 : ((r->howto->type == HUNK_DREL16) ? 1 : 0);
+      size = (r->howto->type == HUNK_DREL32) ? 2 :
+              ((r->howto->type == HUNK_DREL16) ? 1 : 0);
 
       if (target_section == bfd_abs_section_ptr)
 	{
@@ -634,13 +595,8 @@ amiga_perform_reloc (abfd, r, data, sec, obfd, error_message)
 
 /* Perform an a.out reloc */
 static bfd_reloc_status_type
-aout_perform_reloc (abfd, r, data, sec, obfd, error_message)
-     bfd *abfd;
-     arelent *r;
-     PTR data;
-     asection *sec;
-     bfd *obfd;
-     char **error_message;
+aout_perform_reloc (bfd *abfd, arelent *r, PTR data, asection *sec, bfd *obfd,
+                    char **error_message)
 {
   asymbol *sym;			/* Reloc is relative to this */
   asection *target_section;	/* reloc is relative to this section */
@@ -904,9 +860,7 @@ extern boolean amiga_aout_bfd_final_link (bfd *, struct bfd_link_info *);
 /* The final link routine, used both by Amiga and a.out backend*/
 /* This is nearly a copy of _bfd_generic_final_link */
 boolean
-amiga_final_link (abfd, info)
-     bfd *abfd;
-     struct bfd_link_info *info;
+amiga_final_link (bfd *abfd, struct bfd_link_info *info)
 {
   bfd *sub;
   asection *o;
@@ -989,8 +943,7 @@ amiga_final_link (abfd, info)
       DPRINT (10, ("Section in output bfd is %s (%lx)\n", o->name, o));
 
       o->reloc_count = 0;
-      for (p = o->link_order_head;
-	   p != (struct bfd_link_order *) NULL; p = p->next)
+      for (p = o->link_order_head; p; p = p->next)
 	{
 	  if (p->type == bfd_section_reloc_link_order
 	      || p->type == bfd_symbol_reloc_link_order)
@@ -1046,10 +999,8 @@ amiga_final_link (abfd, info)
 	}
       if (o->reloc_count > 0)
 	{
-	  o->orelocation = ((arelent **)
-			    bfd_alloc (abfd,
-				       (o->reloc_count
-					* sizeof (arelent *))));
+	  o->orelocation = (arelent **)
+            bfd_alloc (abfd, o->reloc_count * sizeof (arelent *));
 
 	  if (!o->orelocation)
 	    {
@@ -1067,10 +1018,9 @@ amiga_final_link (abfd, info)
   DPRINT (10, ("Got all relocs\n"));
 
   /* Handle all the link order information for the sections.  */
-  for (o = abfd->sections; o != (asection *) NULL; o = o->next)
+  for (o = abfd->sections; o; o = o->next)
     {
-      for (p = o->link_order_head;
-	   p != (struct bfd_link_order *) NULL; p = p->next)
+      for (p = o->link_order_head; p; p = p->next)
 	{
 	  switch (p->type)
 	    {
@@ -1099,14 +1049,13 @@ amiga_final_link (abfd, info)
 }
 
 
-/* Handle reloc link order . This is nearly a copy from generic_reloc_link_order
-   in linker.c*/
+/*
+ * Handle reloc link order.
+ * This is nearly a copy from generic_reloc_link_order in linker.c
+ */
 static boolean
-amiga_reloc_link_order (abfd, info, sec, link_order)
-     bfd *abfd;
-     struct bfd_link_info *info;
-     asection *sec;
-     struct bfd_link_order *link_order;
+amiga_reloc_link_order (bfd *abfd, struct bfd_link_info *info, asection *sec,
+                        struct bfd_link_order *link_order)
 {
   amiga_reloc_type *r;
 
