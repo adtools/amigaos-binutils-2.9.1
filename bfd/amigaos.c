@@ -246,11 +246,13 @@ skip_longs (bfd * abfd, unsigned long n)
 static boolean
 get_longs (bfd * abfd, unsigned long *buf, long nb)
 {
+  int i;
+
   if (bfd_read ((PTR) buf, nb, sizeof (unsigned long), abfd) !=
       sizeof (unsigned long) * nb)
     return false;
 
-  for (int i = 0; i < nb; i++)
+  for (i = 0; i < nb; i++)
     buf[i] = GL (buf + i);
 
   return true;
