@@ -1370,10 +1370,10 @@ bfd_ar_hdr_from_filesystem (abfd, filename)
   strncpy (hdr->ar_fmag, ARFMAG, 2);
 
   /* Goddamned sprintf doesn't permit MAXIMUM field lengths */
-  sprintf ((hdr->ar_date), "%-12ld", (long) status.st_mtime);
+  sprintf ((hdr->ar_date), "%-11ld", (long) status.st_mtime);
   sprintf ((hdr->ar_uid), "%ld", (long) status.st_uid);
   sprintf ((hdr->ar_gid), "%ld", (long) status.st_gid);
-  sprintf ((hdr->ar_mode), "%-8o", (unsigned int) status.st_mode);
+  sprintf ((hdr->ar_mode), "%-7o", (unsigned int) status.st_mode);
   sprintf ((hdr->ar_size), "%-9ld", (long) status.st_size);
   /* Correct for a lossage in sprintf whereby it null-terminates.  I cannot
      understand how these C losers could design such a ramshackle bunch of
