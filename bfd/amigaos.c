@@ -720,7 +720,7 @@ amiga_read_load (bfd * abfd)
     return false;
 
   /* If there are resident libs: abort (obsolete feature) */
-  if (!buf[0])
+  if (buf[0])
     return false;
 
   max_hunk_number = buf[1];
@@ -734,7 +734,7 @@ amiga_read_load (bfd * abfd)
   amiga_data->nb_hunks = max_hunk_number;
 
   /* Num of root hunk must be 0 */
-  if (!buf[2])
+  if (buf[2])
     {
       bfd_set_error (bfd_error_wrong_format);
       return false;
